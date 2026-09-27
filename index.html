@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spinning Dog Button</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        /* Smooth endless spin animation */
+        @keyframes spinSlow {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinning {
+            animation: spinSlow 2s linear infinite;
+        }
+
+        /* Circular button styles and tap response */
+        .dog-button {
+            transition: transform 0.1s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .dog-button:active {
+            transform: scale(0.94);
+        }
+
+        .dog-button.active-glow {
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-black flex items-center justify-center min-h-screen">
+
+    <!-- Audio file placed in the same folder as index.html -->
+    <audio id="audioPlayer" src="sound.mp3" preload="auto"></audio>
+
+    <div class="relative flex items-center justify-center p-4">
+        <button 
+            id="spinBtn"
+            class="dog-button w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full overflow-hidden border-4 border-neutral-800 focus:outline-none cursor-pointer flex items-center justify-center bg-neutral-900"
+            aria-label="Play Sound and Spin"
+        >
+            <!-- Image loaded directly from local dog.jpg file -->
+            <img 
+                src="dog.jpg" 
+                alt="Dog" 
+                class="w-full h-full object-cover rounded-full pointer-events-none"
+                onerror="this.onerror=null; this.parentElement.innerText='Зображення dog.jpg не знайдено';"
+            />
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('spinBtn');
+            const audio = document.getElementById('audioPlayer');
+            let isPlaying = false;
+
+            // Toggle audio and continuous rotation
+            function toggleState() {
+                if (!isPlaying) {
+                    audio.currentTime = 0;
+                    audio.play().then(() => {
+                        isPlaying = true;
+                        button.classList.add('spinning', 'active-glow');
+                    }).catch((err) => {
+                        // Activate spin even if sound file is missing or blocked by browser policy
+                        console.warn("Аудіо не вдалося відтворити (перевірте наявність файлу sound.mp3):", err);
+                        isPlaying = true;
+                        button.classList.add('spinning', 'active-glow');
+                    });
+                } else {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    isPlaying = false;
+                    button.classList.remove('spinning', 'active-glow');
+                }
+            }
+
+            // Automatically stop spinning when audio track ends
+            audio.addEventListener('ended', () => {
+                isPlaying = false;
+                button.classList.remove('spinning', 'active-glow');
+            });
+
+            // Touch and Click trigger
+            button.addEventListener('click', toggleState);
+        });
+    </script>
+</body>
+</html>
